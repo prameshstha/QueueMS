@@ -1,7 +1,9 @@
 # queuems
 
 A new Flutter project.
-
+**Asumptions**
+Business hours in 9am to 5pm 7 days a week
+Doctors available all days
 ## Getting Started
 
 This project is a starting point for a Flutter application.
