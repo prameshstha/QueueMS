@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_getters_setters
+// ignore_for_file: unnecessary_getters_setters, constant_identifier_names
 
 import 'dart:convert';
 import 'dart:io';
@@ -73,7 +73,7 @@ class AuthProvider extends ChangeNotifier {
 
       final Map<String, dynamic> responseData = json.decode(response.body);
       // print(response.statusCode);
-      // print(responseData);
+      print('loginn $responseData');
       if (response.statusCode == 200) {
         User authUser = User.fromJson(responseData);
         // print(1);
@@ -81,7 +81,7 @@ class AuthProvider extends ChangeNotifier {
         _loggedInStatus = Status.LoggedIn;
         // UserPreferences().saveUser(authUser);
         final prefs = await SharedPreferences.getInstance();
-        prefs.setString('User', jsonEncode(responseData));
+        prefs.setString('User', response.body);
         // print('auth $authUser');
         // print('responsedata $responseData');
         notifyListeners();
@@ -171,12 +171,12 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<String> getDocList() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString("User");
-    if (userJson != null) {
-      _user = User.fromJson(jsonDecode(userJson));
-      // print(_user!.token);
-    }
+    // final prefs = await SharedPreferences.getInstance();
+    // final userJson = prefs.getString("User");
+    // if (userJson != null) {
+    //   _user = User.fromJson(jsonDecode(userJson));
+    //   // print(_user!.token);
+    // }
     //The below code is giving _user null, don't know what is worng so using above code to get user
     // print('user list $_user');
     // var user = getUser;
@@ -223,22 +223,20 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<String> changePassowrd(
-      String password, String email, String token) async {
+  Future<String> changePassowrd(String password) async {
     final Map<String, dynamic> changePasswordData = {
       'password': password,
-      'email': email,
     };
     // print(token);
     final headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      'Authorization': 'token $token'
+      'Authorization': 'token ${_user!.token}'
     };
     var body = json.encode(changePasswordData);
     try {
       final response = await http.patch(
-          Uri.parse(ApiUrl.changePassword + '$email/'),
+          Uri.parse(ApiUrl.changePassword + '${_user!.email}/'),
           body: body,
           headers: headers);
       final responseData = jsonDecode(response.body);
@@ -257,15 +255,16 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // read user
-    String? us = prefs.getString('User');
-    var gotuser = User.fromJson(jsonDecode(us!));
+    // // read user
+    // String? us = prefs.getString('User');
+    // var gotuser = User.fromJson(jsonDecode(us!));
     // print('tok tok ${gotuser}');
     final headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
+      'Authorization': 'token ${_user?.token}'
     };
     try {
       final response =
@@ -285,7 +284,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> clearData() async {
-    _user = null;
+    // _user = null; // commented this because while login authuser.getuser is always null and got error with null.
     // _docUser = null;
     _loggedInStatus = Status.NotLoggedIn;
 

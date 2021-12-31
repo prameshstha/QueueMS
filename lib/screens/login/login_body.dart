@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:queuems/components/already_have_account_check.dart';
 import 'package:queuems/components/background_login_signup.dart';
@@ -155,13 +156,14 @@ class LoginBody extends StatelessWidget {
                                             .then((value) {
                                           print(value);
                                           if (value['status']) {
-                                            Navigator.of(context).pop();
-                                            Navigator.of(context)
-                                                .pushReplacement(
-                                                    MaterialPageRoute(
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            Dashboard()));
+                                            // Wrap Navigator with SchedulerBinding to wait for rendering state before navigating
+                                            // SchedulerBinding.instance?.addPostFrameCallback((_) {
+                                            //   Navigator.of(context).pushReplacementNamed(Dashboard.routeName);
+                                            // });
+                                            Navigator.of(context,
+                                                    rootNavigator: true)
+                                                .pushReplacementNamed(
+                                                    Dashboard.routeName);
 
                                             // Navigator.pushNamed(
                                             //     context, 'dashboard');

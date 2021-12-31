@@ -7,38 +7,47 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BookingProvider extends ChangeNotifier {
-  var _available_time;
-  var _patientBookingDetails = '';
+  var _availableTIme = [];
+  var _patientBookingDetails = [];
   User? _user;
   var _queue = 0;
 
-  String get getPatientBookingDetails {
+  void loadUser(User user) {
+    _user = user;
+    notifyListeners();
+  }
+
+  BookingProvider() {
+    _loadUser();
+  }
+  _loadUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString("User");
+    print('load user');
+
+    if (userJson != null) {
+      _user = User.fromJson(jsonDecode(userJson));
+    }
+    notifyListeners();
+  }
+
+  List get getPatientBookingDetails {
     // print('return $_patientBookingDetails');
     return _patientBookingDetails;
   }
 
-  set setPatientBookingDetails(String bookingDetails) {
-    print('set user $bookingDetails');
-    _patientBookingDetails = bookingDetails;
-    // print('_user $_user');
-    notifyListeners();
-  }
-
-  // set setQueueNum(int queue_num) {
-  //   _queue = queue_num;
-  // }
   int get getQueueNum {
     print('return $_queue');
     return _queue;
   }
 
   Future<String> getAvailableTime(String date, int doc_id) async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString("User");
-    if (userJson != null) {
-      _user = User.fromJson(jsonDecode(userJson));
-    }
-    // print(date);
+    // final prefs = await SharedPreferences.getInstance();
+    // final userJson = prefs.getString("User");
+    // if (userJson != null) {
+    //   _user = User.fromJson(jsonDecode(userJson));
+    // }
+    print(_user);
     final Map<String, dynamic> apiBodyData = {
       'booking_date': date,
       'doc_id': doc_id
@@ -55,7 +64,8 @@ class BookingProvider extends ChangeNotifier {
       // print(responseData);
       // print(response.statusCode);
       if (response.statusCode == 200) {
-        _available_time = responseData;
+        _availableTIme = jsonDecode(responseData);
+        notifyListeners();
         return responseData;
       } else {
         return responseData;
@@ -71,12 +81,12 @@ class BookingProvider extends ChangeNotifier {
     int doc_id,
     String date,
   ) async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString("User");
-    if (userJson != null) {
-      _user = User.fromJson(jsonDecode(userJson));
-    }
-    print(date);
+    // final prefs = await SharedPreferences.getInstance();
+    // final userJson = prefs.getString("User");
+    // if (userJson != null) {
+    //   _user = User.fromJson(jsonDecode(userJson));
+    // }
+    print('$date , $_user');
     final Map<String, dynamic> apiBodyData = {
       'booking_status': 'Booked',
       'booking_time': time,
@@ -97,7 +107,6 @@ class BookingProvider extends ChangeNotifier {
       // print(responseData);
       print(response.body);
       if (response.statusCode == 201) {
-        _available_time = responseData;
         return 'success';
       } else {
         var error = (jsonDecode(response.body))['error'];
@@ -112,11 +121,11 @@ class BookingProvider extends ChangeNotifier {
 
 //get all booking details of one patient
   Future<String> getAllBookingDetails() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString("User");
-    if (userJson != null) {
-      _user = User.fromJson(jsonDecode(userJson));
-    }
+    // final prefs = await SharedPreferences.getInstance();
+    // final userJson = prefs.getString("User");
+    // if (userJson != null) {
+    //   _user = User.fromJson(jsonDecode(userJson));
+    // }
 
     try {
       print('tokennnnnnnnnn ${_user?.token}');
@@ -127,16 +136,15 @@ class BookingProvider extends ChangeNotifier {
             'Content-Type': 'application/json',
             'Authorization': 'token ${_user?.token}'
           });
-      final String responseData = (response.body);
-      // print(responseData);
+
       print(response.statusCode);
       if (response.statusCode == 200) {
         // setPatientBookingDetails(responseData);
 
-        _patientBookingDetails = responseData;
-        // print('_patientBookingDetails $_patientBookingDetails');
+        _patientBookingDetails = jsonDecode(response.body);
+        print('_patientBookingDetails $_patientBookingDetails');
         notifyListeners();
-        return responseData;
+        return 'Success';
       } else {
         return 'failed getall booking';
       }
@@ -148,11 +156,11 @@ class BookingProvider extends ChangeNotifier {
 
 //get queue number of patient
   Future<String> getQueueNumberOfPatient() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString("User");
-    if (userJson != null) {
-      _user = User.fromJson(jsonDecode(userJson));
-    }
+    // final prefs = await SharedPreferences.getInstance();
+    // final userJson = prefs.getString("User");
+    // if (userJson != null) {
+    //   _user = User.fromJson(jsonDecode(userJson));
+    // }
 
     try {
       // print(' ${_user?.token}');
@@ -185,11 +193,11 @@ class BookingProvider extends ChangeNotifier {
 
 //get one booking details
   Future<String> getBookingDetails(int booking_id) async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString("User");
-    if (userJson != null) {
-      _user = User.fromJson(jsonDecode(userJson));
-    }
+    // final prefs = await SharedPreferences.getInstance();
+    // final userJson = prefs.getString("User");
+    // if (userJson != null) {
+    //   _user = User.fromJson(jsonDecode(userJson));
+    // }
 
     try {
       // print('tokennnnnnnnnn ${_user?.token}');
@@ -216,11 +224,11 @@ class BookingProvider extends ChangeNotifier {
 
 //get one booking details
   Future<String> checkIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString("User");
-    if (userJson != null) {
-      _user = User.fromJson(jsonDecode(userJson));
-    }
+    // final prefs = await SharedPreferences.getInstance();
+    // final userJson = prefs.getString("User");
+    // if (userJson != null) {
+    //   _user = User.fromJson(jsonDecode(userJson));
+    // }
 
     try {
       // print('tokennnnnnnnnn ${_user?.token}');

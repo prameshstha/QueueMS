@@ -1,14 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:provider/src/provider.dart';
-import 'package:queuems/components/background_login_signup.dart';
+import 'package:provider/provider.dart';
 import 'package:queuems/components/select_date_widget.dart';
 import 'package:queuems/model/User.dart';
 import 'package:queuems/providers/auth_provider.dart';
 import 'package:queuems/providers/bookings_provider.dart';
 import 'package:queuems/utility/constant.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class BookAppoinment extends StatefulWidget {
   const BookAppoinment({Key? key}) : super(key: key);
@@ -206,9 +204,9 @@ class _BookBodyState extends State<BookBody> {
                       //dropdown item for docs starts
                       DropdownButton<User>(
                           value: selectedDoc,
-                          icon: Icon(Icons.arrow_drop_down),
+                          icon: const Icon(Icons.arrow_drop_down),
                           iconSize: 42,
-                          underline: SizedBox(),
+                          underline: const SizedBox(),
                           onChanged: (newValue) {
                             if (datess != '') {
                               // print(datess);
@@ -229,6 +227,10 @@ class _BookBodyState extends State<BookBody> {
                               }
 
                               _timeSlot();
+                            } else {
+                              setState(() {
+                                selectedDoc = newValue;
+                              });
                             }
                           },
                           items: (docList).map<DropdownMenuItem<User>>((value) {
@@ -259,7 +261,7 @@ class _BookBodyState extends State<BookBody> {
                       ),
                       DropdownButton(
                           value: selected_time_slot,
-                          icon: Icon(Icons.arrow_drop_down),
+                          icon: const Icon(Icons.arrow_drop_down),
                           iconSize: 42,
                           onChanged: (newValue) {
                             setState(() {
@@ -281,7 +283,7 @@ class _BookBodyState extends State<BookBody> {
                                 selected_time_slot != '--Select Time--') {
                               print('yes');
                               //booking function call from here
-                              BookingProvider()
+                              bookingProvider
                                   .bookAppionment(selected_time_slot,
                                       selectedDoc!.id, datess)
                                   .then((booked) {
@@ -304,7 +306,7 @@ class _BookBodyState extends State<BookBody> {
                                           'Please select all of the above fields.')));
                             }
                           },
-                          child: Text('Book Now'))
+                          child: const Text('Book Now'))
                     ],
                   )),
               //container for time select end

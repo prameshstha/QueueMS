@@ -2,17 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:queuems/components/background_login_signup.dart';
-import 'package:queuems/components/or_divider.dart';
 import 'package:queuems/model/User.dart';
 import 'package:queuems/providers/auth_provider.dart';
 import 'package:queuems/providers/bookings_provider.dart';
-import 'package:queuems/screens/homepage/home_screen.dart';
-import 'package:queuems/screens/login/login_screen.dart';
+import 'package:queuems/screens/splash_screen.dart';
 import 'package:queuems/utility/constant.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Dashboard extends StatefulWidget {
+  static const routeName = "dashboard";
   const Dashboard({Key? key}) : super(key: key);
 
   @override
@@ -20,7 +17,7 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  var _user = {};
+  User? _user;
   var patientBookingDetails;
   @override
   void initState() {
@@ -29,26 +26,21 @@ class _DashboardState extends State<Dashboard> {
     Provider.of<BookingProvider>(context, listen: false).getAllBookingDetails();
     Provider.of<BookingProvider>(context, listen: false)
         .getQueueNumberOfPatient();
-    final sp = AuthProvider().getPrefs('User').then((value) {
-      // print(value);
-      // print(jsonDecode(value!));
-      setState(() {
-        _user = jsonDecode(value!);
-      });
-    });
+
+    // AuthProvider().getUser !=null
   }
 
   @override
   Widget build(BuildContext context) {
-    var ab = context.watch<BookingProvider>().getPatientBookingDetails;
-    // print('objectt ab ${ab}');
-    patientBookingDetails = ab != '' ? jsonDecode(ab) : '';
-    // print('patientBookingDetails ${patientBookingDetails.length}');
-    // print('ab ${patientBookingDetails[0]['booking_status']}');
-    var no_of_booking =
+    _user = Provider.of<AuthProvider>(context).getUser;
+    var patientBookingDetails =
+        context.watch<BookingProvider>().getPatientBookingDetails;
+    // print('objectt ab ${patientBookingDetails}');
+    var noOfBooking =
+        // ignore: unnecessary_null_comparison
         patientBookingDetails != null ? patientBookingDetails.length : 0;
-    var booking_status =
-        no_of_booking != 0 ? patientBookingDetails[0]['booking_status'] : '';
+    var bookingStatus =
+        noOfBooking != 0 ? patientBookingDetails[0]['booking_status'] : '';
     // print(jsonDecode(ab).length);
     var queue = context.watch<BookingProvider>().getQueueNum;
     print('queue $queue');
@@ -66,16 +58,13 @@ class _DashboardState extends State<Dashboard> {
               decoration: const BoxDecoration(color: kprimaryColor),
               currentAccountPicture: Image.asset('assets/images/user.jpg'),
               accountName: Text(
-                _user['first_name'] != null
-                    ? _user['first_name'].toString().toUpperCase()
-                    : '',
+                _user!.firstname.toUpperCase(),
                 style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold),
               ),
-              accountEmail: Text(
-                  _user['email'] != null ? _user['email'].toString() : '',
+              accountEmail: Text(_user!.email,
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
@@ -83,33 +72,33 @@ class _DashboardState extends State<Dashboard> {
             ),
             ListTile(
               title: const Text('History'),
-              subtitle: Text(''),
+              subtitle: const Text(''),
               leading: const Icon(Icons.confirmation_num_outlined),
               onTap: () {},
             ),
             ListTile(
               title: const Text('My Profile'),
-              subtitle: Text(''),
-              leading: Icon(Icons.manage_accounts),
+              subtitle: const Text(''),
+              leading: const Icon(Icons.manage_accounts),
               onTap: () {},
             ),
             ListTile(
-              title: Text('Change Password'),
-              leading: Icon(Icons.lock_outline),
+              title: const Text('Change Password'),
+              leading: const Icon(Icons.lock_outline),
               onTap: () {
                 Navigator.pushNamed(context, 'changePassword');
               },
             ),
             ListTile(
-              title: Text('Logout'),
-              leading: Icon(Icons.logout_outlined),
+              title: const Text('Logout'),
+              leading: const Icon(Icons.logout_outlined),
               onTap: () {
                 var a = authProvider.logout().then((value) {
                   // print(value);
                   if (value) {
                     Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
-                            builder: (BuildContext context) => Homescreen()),
+                            builder: (BuildContext context) => SplashScreen()),
                         (route) => false);
                   }
                 });
@@ -123,7 +112,7 @@ class _DashboardState extends State<Dashboard> {
           color: Colors.grey[200],
           child: Column(
             children: [
-              Container(
+              SizedBox(
                   height: size.height,
                   width: double.infinity,
                   child: Stack(children: [
@@ -141,9 +130,7 @@ class _DashboardState extends State<Dashboard> {
                           AppBar(
                             backgroundColor: Colors.transparent,
                             elevation: 0,
-                            title: Text(
-                              'Welcome ${_user['first_name'] != null ? _user['first_name'].toString().toUpperCase() : ''}',
-                            ),
+                            title: Text('Welcome ${_user!.firstname}'),
                           ),
                           SizedBox(
                             height: size.height * 0.015,
@@ -172,9 +159,9 @@ class _DashboardState extends State<Dashboard> {
                           SizedBox(
                             height: size.height * 0.1,
                           ),
-                          no_of_booking != 0 &&
-                                  booking_status != 'Canceled' &&
-                                  booking_status != 'Completed'
+                          noOfBooking != 0 &&
+                                  bookingStatus != 'Canceled' &&
+                                  bookingStatus != 'Completed'
                               ? Container(
                                   //if there is booking
                                   height: size.height * 0.65,
@@ -203,7 +190,7 @@ class _DashboardState extends State<Dashboard> {
                                                         vertical: 10,
                                                         horizontal: 20),
                                                     child: Text(
-                                                        'You have $no_of_booking booking. Please checkin to get queue token'),
+                                                        'You have $noOfBooking booking. Please checkin to get queue token'),
                                                   ),
                                                   const Expanded(
                                                       child: Divider(
@@ -219,7 +206,7 @@ class _DashboardState extends State<Dashboard> {
 
                                                       TextButton(
                                                           onPressed:
-                                                              booking_status !=
+                                                              bookingStatus !=
                                                                       'CheckedIn'
                                                                   ? () {
                                                                       //check in code here
@@ -239,7 +226,7 @@ class _DashboardState extends State<Dashboard> {
                                                                           'already checked in');
                                                                     },
                                                           child: Text(
-                                                              booking_status ==
+                                                              bookingStatus ==
                                                                       'CheckedIn'
                                                                   ? 'Checked In'
                                                                   : 'Check In')),
@@ -266,7 +253,7 @@ class _DashboardState extends State<Dashboard> {
                                                 child: Column(
                                                   children: [
                                                     Text(
-                                                        'You have ${booking_status == 'CheckedIn' ? 1 : 0} tokens on Waiting'),
+                                                        'You have ${bookingStatus == 'CheckedIn' ? 1 : 0} tokens on Waiting'),
                                                     const Expanded(
                                                         child: Divider(
                                                       color: Color(0xffd9d9d9),
@@ -277,11 +264,11 @@ class _DashboardState extends State<Dashboard> {
                                                           MainAxisAlignment
                                                               .center,
                                                       children: [
-                                                        Text(
+                                                        const Text(
                                                             'Your queue number is '),
                                                         Text(
                                                           ' $queue.',
-                                                          style: TextStyle(
+                                                          style: const TextStyle(
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold),
@@ -294,7 +281,7 @@ class _DashboardState extends State<Dashboard> {
                                             width: double.infinity,
                                             decoration: _buildBoxDecoration()),
 
-                                        booking_status == 'CheckedIn'
+                                        bookingStatus == 'CheckedIn'
                                             ? ClipPath(
                                                 clipper: DolDurmaClipper(
                                                     bottom: 80, holeRadius: 30),

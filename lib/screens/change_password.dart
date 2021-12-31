@@ -155,31 +155,7 @@ class ChangePassword extends StatelessWidget {
                                       if (loginKey!.validate()) {
                                         String password =
                                             password1Controller.text;
-                                        final authProvider = AuthProvider();
-                                        var em = authProvider
-                                            .getPrefs('User')
-                                            .then((value) async {
-                                          var us = {};
-                                          us = jsonDecode(value!);
-                                          var email = us['email'];
-                                          var token = us['token'];
-
-                                          authProvider
-                                              .changePassowrd(
-                                                  password, email, token)
-                                              .then((value) {
-                                            print('value $value');
-                                            if (value == '200') {
-                                              Navigator.pushNamed(
-                                                  context, 'passwordChanged');
-                                            } else {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(const SnackBar(
-                                                      content: Text(
-                                                          'Something\'s wrong')));
-                                            }
-                                          });
-                                        });
+                                        AuthProvider().changePassowrd(password);
                                       } else {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(const SnackBar(

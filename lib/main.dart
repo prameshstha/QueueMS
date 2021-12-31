@@ -13,72 +13,80 @@ import 'package:queuems/screens/homepage/home_screen.dart';
 import 'package:queuems/screens/login/login_screen.dart';
 import 'package:queuems/screens/password_changed.dart';
 import 'package:queuems/screens/signup/signup_screen.dart';
+import 'package:queuems/screens/splash_screen.dart';
 import 'package:queuems/utility/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() async {
-  String initialRt;
+void main() {
+  // String initialRt;
 
-  // handle exceptions caused by making main async
-  WidgetsFlutterBinding.ensureInitialized();
+  // // handle exceptions caused by making main async
+  // WidgetsFlutterBinding.ensureInitialized();
 
-  // init a shared preferences variable
-  SharedPreferences prefs = await SharedPreferences.getInstance();
+  // // init a shared preferences variable
+  // SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  // read user
-  String? user = '';
-  String initRoute = '';
-  user = prefs.getString('User') ?? 'noUser';
-  // print('user main .dart $user');
-  if (user == 'noUser') {
-    initRoute = '/';
-  } else {
-    AuthProvider().setUser = User.fromJson(jsonDecode(user));
-    user = user;
-    initRoute = 'dashboard';
-  }
+  // // read user
+  // String? user = '';
+  // String initRoute = '';
+  // user = prefs.getString('User') ?? 'noUser';
+  // // print('user main .dart $user');
+  // if (user == 'noUser') {
+  //   initRoute = '/';
+  // } else {
+  //   AuthProvider().setUser = User.fromJson(jsonDecode(user));
+  //   user = user;
+  //   initRoute = 'dashboard';
+  // }
 
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(
-        create: (_) => AuthProvider(),
-      ),
-      ChangeNotifierProvider(create: (_) => BookingProvider()),
-    ],
-    child: MyApp(
-      user: user,
-      initRoute: initRoute,
-    ),
-  ));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final user;
-  final String initRoute;
-  const MyApp({Key? key, required this.initRoute, required this.user})
-      : super(key: key);
+  // final user;
+  // final String initRoute;
+  const MyApp({
+    Key? key,
+    // required this.initRoute, required this.user
+  }) : super(key: key);
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     // print('initRoute ${initRoute} user $user');
-    return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'QueueMS',
-        theme: ThemeData(
-            primarySwatch: Colors.purple,
-            primaryColor: kprimaryLightColor,
-            appBarTheme: const AppBarTheme(elevation: 0.0)),
-        initialRoute: initRoute,
-        routes: {
-          '/': (context) => Homescreen(),
-          'loginScreen': (context) => const Loginscreen(),
-          'signUpScreen': (context) => const SignUpScreen(),
-          'forgotPassword': (context) => ForgotPassword(),
-          'changePassword': (context) => ChangePassword(),
-          'passwordChanged': (context) => const PasswordChanged(),
-          'dashboard': (context) => const Dashboard(),
-          'bookAppoinment': (context) => const BookAppoinment(),
-        });
+    // AuthProvider().isLoggedIn();
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(),
+        ),
+        //send the value of user form authProvider to booking provider
+        ChangeNotifierProxyProvider<AuthProvider, BookingProvider>(
+          create: (_) => BookingProvider(),
+          update: (_, authProvider, bookingProvider) => bookingProvider!
+            ..loadUser(authProvider.getUser ?? AuthProvider().getUser!),
+        )
+      ],
+      child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'QueueMS',
+          theme: ThemeData(
+              primarySwatch: Colors.purple,
+              primaryColor: kprimaryLightColor,
+              appBarTheme: const AppBarTheme(elevation: 0.0)),
+          initialRoute: SplashScreen.routeName,
+          routes: {
+            SplashScreen.routeName: (context) => SplashScreen(),
+            // '/': (context) => Homescreen(),
+            Homescreen.routeName: (context) => const Homescreen(),
+            'loginScreen': (context) => const Loginscreen(),
+            'signUpScreen': (context) => const SignUpScreen(),
+            'forgotPassword': (context) => ForgotPassword(),
+            'changePassword': (context) => ChangePassword(),
+            'passwordChanged': (context) => const PasswordChanged(),
+            Dashboard.routeName: (context) => const Dashboard(),
+            'bookAppoinment': (context) => const BookAppoinment(),
+          }),
+    );
   }
 }
